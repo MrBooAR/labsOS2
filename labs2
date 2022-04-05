@@ -12,6 +12,38 @@ struct strarray
     double average;
 };
 extern int errno;
+void print(strarray* tmparr)
+{
+    for (int i = 0; i < tmparr->size - 1; i++)
+    {
+        printf("%lf\t", tmparr->arr[i]);
+    }
+    printf("%lf\n", tmparr->arr[tmparr->size - 1]);
+}
+DWORD WINAPI min_max(LPVOID param)
+{
+    strarray* tmparr = (strarray*)param;
+    double min = tmparr->arr[0];
+    double max = min;
+    for (int i = 1; i < tmparr->size; i++)
+    {
+        if (min > tmparr->arr[i])
+        {
+            min = tmparr->arr[i];
+            Sleep(7);
+        }
+        if (max < tmparr->arr[i])
+        {
+            max = tmparr->arr[i];
+            Sleep(7);
+        }
+    }
+    tmparr->max = max;
+    tmparr->min = min;
+    printf("The maximum value in the array:\t%lf\n", max);
+    printf("The minimum value in the array:\t%lf\n", min);
+    return 0;
+}
 int main(void)
 {
     int size;
@@ -34,4 +66,19 @@ int main(void)
     {
         scanf_s("%lf", &arr[i]);
     }
+    strarray* mainarray = (strarray*)malloc(sizeof(strarray));
+    mainarray->arr = arr;
+    mainarray->size = size;
+    HANDLE hThread_min_max;
+    DWORD IDThread_min_max;
+    hThread_min_max = CreateThread(NULL, 0, min_max, (void*)mainarray, 0, &IDThread_min_max);
+    if (hThread_min_max == NULL) {
+        return GetLastError();
+    }
+    WaitForSingleObject(hThread_min_max, INFINITE);
+    CloseHandle(hThread_min_max);
+    print(mainarray);
+    free(arr);
+    free(mainarray);
+    return 0;
 }
