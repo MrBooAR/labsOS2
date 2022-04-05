@@ -1,0 +1,37 @@
+#include <cstdio>
+#include <cerrno>
+#include <Windows.h>
+#include <iostream>
+using namespace std;
+struct strarray
+{
+    double* arr;
+    int size;
+    double min;
+    double max;
+    double average;
+};
+extern int errno;
+int main(void)
+{
+    int size;
+    printf("Enter the dimentions of an array: ");
+    scanf_s("%d", &size);
+    if (size <= 0)
+    {
+        errno = EDOM;
+        perror("Error:\t");
+        return EDOM;
+    }
+    double* arr = (double*)malloc(sizeof(double) * size);
+    if (arr == NULL)
+    {
+        errno = ENOMEM;
+        perror("Error:\t");
+        return ENOMEM;
+    }
+    for (int i = 0; i < size; i++)
+    {
+        scanf_s("%lf", &arr[i]);
+    }
+}
