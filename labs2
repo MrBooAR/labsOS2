@@ -12,6 +12,18 @@ struct strarray
     double average;
 };
 extern int errno;
+void replaceMinMax(strarray* tmparr)
+{
+    for (int i = 0; i < tmparr->size; i++)
+    {
+        if (tmparr->arr[i] == tmparr->max ||
+            tmparr->arr[i] == tmparr->min)
+        {
+            tmparr->arr[i] = tmparr->average;
+        }
+    }
+    return;
+}
 void print(strarray* tmparr)
 {
     for (int i = 0; i < tmparr->size - 1; i++)
@@ -44,6 +56,19 @@ DWORD WINAPI min_max(LPVOID param)
     printf("The minimum value in the array:\t%lf\n", min);
     return 0;
 }
+DWORD WINAPI average(LPVOID param)
+{
+    strarray* tmparr = (strarray*)param;
+    double sum = tmparr->arr[0];
+    for (int i = 1; i < tmparr->size; i++)
+    {
+        sum += tmparr->arr[i];
+        Sleep(12);
+    }
+    tmparr->average = sum / tmparr->size;
+    printf("The average value in the array:\t%lf\n", tmparr->average);
+    return 0;
+}
 int main(void)
 {
     int size;
@@ -72,11 +97,17 @@ int main(void)
     HANDLE hThread_min_max;
     DWORD IDThread_min_max;
     hThread_min_max = CreateThread(NULL, 0, min_max, (void*)mainarray, 0, &IDThread_min_max);
-    if (hThread_min_max == NULL) {
+    HANDLE hThread_average;
+    DWORD IDThread_average;
+    hThread_average = CreateThread(NULL, 0, average, (void*)mainarray, 0, &IDThread_average);
+    if (hThread_min_max == NULL || hThread_average == NULL) {
         return GetLastError();
     }
     WaitForSingleObject(hThread_min_max, INFINITE);
+    WaitForSingleObject(hThread_average, INFINITE);
     CloseHandle(hThread_min_max);
+    CloseHandle(hThread_average);
+    replaceMinMax(mainarray);
     print(mainarray);
     free(arr);
     free(mainarray);
